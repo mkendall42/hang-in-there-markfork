@@ -1,4 +1,15 @@
 // query selector variables go here 👇
+//Keep these simple for now; refactor to utilize objects / createPoster() fn later
+let mainImage = document.querySelector(".poster-img")   //Contains src and alt attrs
+let mainTitle = document.querySelector(".poster-title")
+let mainQuote = document.querySelector(".poster-quote")
+let buttonShowRandomPoster = document.querySelector(".show-random")
+let buttonMakeYourOwnPoster = document.querySelector(".show-form")
+let buttonSavedPosters = document.querySelector(".show-saved")
+let buttonTakeMeBack = document.querySelector(".show-main")     //This worries me; this class could easily be re-used somewhere else...
+let buttonBackToMain = document.querySelector(".back-to-main")  //Again, overlapping function with the above (not DRY really...or at the least, makes it less clear)
+let posterForm = document.querySelector(".poster-form")   //Should be static and unique enough
+let sectionSavedPosters = document.querySelector(".saved-posters")
 
 // we've provided you with some data to work with 👇
 // tip: you can tuck this data out of view with the dropdown found near the line number where the variable is declared 
@@ -102,7 +113,24 @@ var quotes = [
 var savedPosters = [];
 var currentPoster;
 
+
 // event listeners go here 👇
+
+//For page load, a random image should be chosen:
+// mainImage.addEventListener("PAGE_LOAD", changeDisplayedPoster)
+window.addEventListener("load", changeDisplayedPoster)
+
+//When random button is clicked, it should (re-)randomize the image:
+buttonShowRandomPoster.addEventListener("click", changeDisplayedPoster)
+
+//When make own button clicked, should hide the current poster, and instead display the form (i.e. toggle visibility of BOTH)
+buttonMakeYourOwnPoster.addEventListener("click", toggleMakePosterForm)
+
+//When show saved button clicked, hide current poster, and display saved posters (smaller)
+buttonSavedPosters.addEventListener("click", toggleSavedPosters)
+
+//Get back to the main page!  (Again, kinda repetitive here...)
+buttonTakeMeBack.addEventListener("click", takeMeBack)
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
@@ -115,5 +143,59 @@ function createPoster(imageURL, title, quote) {
     id: Date.now(), 
     imageURL: imageURL, 
     title: title, 
-    quote: quote}
+    quote: quote
+  }
 }
+
+//Custom-built functions:
+function changeDisplayedPoster() {
+  //Again, serious refactoring is in order here later...
+  mainImage.src = images[getRandomIndex(images)]
+  mainImage.alt = "Some motivational image here"    //Mostly to differentiate from default HTML one
+  mainTitle.innerText = titles[getRandomIndex(titles)]
+  mainQuote.innerText = quotes[getRandomIndex(quotes)]
+}
+
+function toggleMakePosterForm() {
+  //Hide current poster
+  //NOTE: incomplete: still a black border bar.  Need to target a 'larger' element / node...
+  mainImage.classList.toggle("hidden")
+  mainTitle.classList.toggle("hidden")
+  mainQuote.classList.toggle("hidden")
+
+  //Show form and allow interaction
+  posterForm.classList.toggle("hidden")
+}
+
+function toggleSavedPosters() {
+  //Hide current poster
+  //Again, redesign and refactor (since used above as well)
+  mainImage.classList.toggle("hidden")
+  mainTitle.classList.toggle("hidden")
+  mainQuote.classList.toggle("hidden")  
+
+  //Show saved posters, etc.
+  //Maybe even refactor more broadly - pass node as argument if that's possible?
+  sectionSavedPosters.classList.toggle("hidden")
+  
+}
+
+function takeMeBack() {
+  
+}
+
+
+//Trying out finding a random poster:
+// for (let i = 0; i < 10; i++) {
+//   console.log("Found random image URL: ", images[getRandomIndex(images)])
+
+// }
+
+//Some scratchin' beforehand (can remove in a little while)
+// console.log("Hello, world!");
+// console.log("quotes: ", quotes);
+// console.log("savedPosters: ", savedPosters);
+
+// //Try modifying the array and check contents:
+// savedPosters.push("some random poster");
+// console.log("new savedPosters: ", savedPosters);
