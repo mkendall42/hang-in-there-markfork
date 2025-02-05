@@ -8,8 +8,15 @@ let buttonMakeYourOwnPoster = document.querySelector(".show-form")
 let buttonSavedPosters = document.querySelector(".show-saved")
 let buttonTakeMeBack = document.querySelector(".show-main")     //This worries me; this class could easily be re-used somewhere else...
 let buttonBackToMain = document.querySelector(".back-to-main")  //Again, overlapping function with the above (not DRY really...or at the least, makes it less clear)
+let buttonShowMyPoster = document.querySelector(".make-poster")
 let posterForm = document.querySelector(".poster-form")   //Should be static and unique enough
 let sectionSavedPosters = document.querySelector(".saved-posters")
+
+//These REALLY make more sense in the function further down, but ok...
+// let posterImageURL = document.querySelector()
+// let posterTitle = document.querySelector()
+// let posterQuote = document.querySelector()
+let formData = document.querySelector("#new-poster-form")   //I manually created this ID to uniquely locate it
 
 // we've provided you with some data to work with 👇
 // tip: you can tuck this data out of view with the dropdown found near the line number where the variable is declared 
@@ -131,6 +138,11 @@ buttonSavedPosters.addEventListener("click", toggleSavedPosters)
 
 //Get back to the main page!  (Again, kinda repetitive here...)
 buttonTakeMeBack.addEventListener("click", takeMeBack)
+buttonBackToMain.addEventListener("click", backToMain)
+
+buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
+
+formData.addEventListener("submit", )
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
@@ -181,7 +193,24 @@ function toggleSavedPosters() {
 }
 
 function takeMeBack() {
+  toggleMakePosterForm()
+}
+
+function backToMain() {
+  toggleSavedPosters()
+}
+
+function makeAndDisplayPoster(event) {
+  //First, bypass default behavior.  This is apparently deprecated...so what is modern then?
+  event.preventDefault()
+  //Collect data
+  formData
+
+  //Create new poster (currentPoster is a global var, and thus accessible here...don't know if I like that)
+  currentPoster = createPoster(imageURL, title, quote)
   
+  //Toggle visibilities and display new poster (instead of random / previous)
+
 }
 
 
