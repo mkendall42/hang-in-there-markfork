@@ -12,12 +12,14 @@ let buttonTakeMeBack = document.querySelector(".show-main")     //This worries m
 let buttonBackToMain = document.querySelector(".back-to-main")  //Again, overlapping function with the above (not DRY really...or at the least, makes it less clear)
 let buttonShowMyPoster = document.querySelector(".make-poster")
 let buttonSaveThisPoster = document.querySelector(".save-poster")
+let buttonUnmotivationalPosters = document.querySelector(".show-unmotivational")
+let buttonReturnToMotivation = document.querySelector("#return-to-main")
 
 let posterForm = document.querySelector(".poster-form")   //Should be static and unique enough
 
 let sectionSavedPosters = document.querySelector(".saved-posters")
 // let postersGrid = document.querySelector(".saved-posters-grid")
-
+let sectionUnmotivationalPosters = document.querySelector(".unmotivational-posters")
 
 //These REALLY make more sense in the function further down, but ok...
 // let posterImageURL = document.querySelector()
@@ -127,6 +129,137 @@ var quotes = [
 var savedPosters = [];
 var currentPoster;
 
+//Unmotivational poster data (assume it was e.g. pulled from a database)
+let unmotivationalPosters = [
+  {
+    name: "FAILURE",
+    description: "Why bother trying? It's probably not worth it.",
+    price: 68.00,
+    year: 2019,
+    vintage: true,
+    img_url: "./assets/failure.jpg",
+  },
+  {
+    name: "MEDIOCRITY",
+    description: "Dreams are just that—dreams.",
+    price: 127.00,
+    year: 2021,
+    vintage: false,
+    img_url: "./assets/mediocrity.jpg",
+  },
+  {
+    name: "REGRET",
+    description: "Hard work rarely pays off.",
+    price: 89.00,
+    year: 2018,
+    vintage: true,
+    img_url:  "./assets/regret.jpg",
+  },
+  {
+    name: "FUTILITY",
+    description: "You're not good enough.",
+    price: 150.00,
+    year: 2016,
+    vintage: false,
+    img_url:  "./assets/futility.jpg",
+  },
+  {
+    name: "DEFEAT",
+    description: "It's too late to start now.",
+    price: 35.00,
+    year: 2023,
+    vintage: false,
+    img_url:  "./assets/defeat.jpg",
+  },
+  {
+    name: "HOPELESSNESS",
+    description: "Stay in your comfort zone; it's safer.",
+    price: 112.00,
+    year: 2020,
+    vintage: true,
+    img_url: "./assets/hopelessness.jpg",
+  },
+  {
+    name: "LAZINESS",
+    description: "You can't change anything.",
+    price: 25.00,
+    year: 2022,
+    vintage: false,
+    img_url: "./assets/laziness.jpg",
+  },
+  {
+    name: "PROCRASTINATION",
+    description: "Better to avoid failure by not trying at all.",
+    price: 48.00,
+    year: 2017,
+    vintage: true,
+    img_url: "./assets/procrastination.jpg",
+  },
+  {
+    name: "DESPAIR",
+    description: "Let someone else do it; you’ll just mess it up.",
+    price: 73.00,
+    year: 2015,
+    vintage: false,
+    img_url: "./assets/despair.jpg",
+  },
+  {
+    name: "NEGLECT",
+    description: "Happiness is overrated.",
+    price: 160.00,
+    year: 2019,
+    vintage: true,
+    img_url: "./assets/neglect.jpg",
+  },
+  {
+    name: "FEAR",
+    description: "Giving up is always an option.",
+    price: 91.00,
+    year: 2014,
+    vintage: false,
+    img_url: "./assets/fear.jpg",
+  },
+  {
+    name: "APATHY",
+    description: "No one cares about your effort.",
+    price: 110.00,
+    year: 2016,
+    vintage: true,
+    img_url: "./assets/apathy.jpg",
+  },
+  {
+    name: "MISERY",
+    description: "Why take risks when you can stay stagnant?",
+    price: 55.00,
+    year: 2021,
+    vintage: false,
+    img_url: "./assets/misery.jpg",
+  },
+  {
+    name: "BLAME",
+    description: "Expect disappointment and you'll never be disappointed.",
+    price: 39.00,
+    year: 2017,
+    vintage: true,
+    img_url: "./assets/blame.jpg",
+  },
+  {
+    name: "DOUBT",
+    description: "Success is for other people, not you.",
+    price: 140.00,
+    year: 2020,
+    vintage: false,
+    img_url: "./assets/doubt.jpg",
+  }
+];
+
+function cleanData(posters) {
+  //Assume that we are modifying in-place the posters variable
+  for (let i = 0; i < posters.length; i++) {
+    posters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description)
+  }
+}
+
 
 // event listeners go here 👇
 
@@ -152,6 +285,9 @@ buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
 formNewPoster.addEventListener("submit", makeAndDisplayPoster)
 
 buttonSaveThisPoster.addEventListener("click", savePoster)
+
+buttonUnmotivationalPosters.addEventListener("click", showUnmotivationalPosters)
+buttonReturnToMotivation.addEventListener("click", backToMotivation)
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
@@ -232,12 +368,40 @@ function toggleSavedPosters() {
   }
 }
 
+function showUnmotivationalPosters() {
+  //Same idea as for create new, or show posters
+  // sectionUnmotivationalPosters.classList.toggle("hidden")   //Toggle is getting me in trouble...
+  sectionUnmotivationalPosters.classList.remove("hidden")
+  sectionMainPoster.classList.add("hidden")
+
+  //Get our unmotivational poster data array ready!
+  //NOTE: this can only be run ONCE (cleaning cleaned data will confuse the moethods!)
+  //FIX THIS / MOVE IT ACCORDINGLY LATER!!!
+  cleanData(unmotivationalPosters)
+
+  debugger
+  
+
+  let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
+  unmotivationalGrid.innerHTML = ""
+
+}
+
 function takeMeBack() {
   toggleMakePosterForm()
 }
 
 function backToMain() {
-  toggleSavedPosters()
+  toggleSavedPosters()    //This had unintended effects when I was using innerHTML += before.  Rewrite this eventually, not optimal...
+}
+
+function backToMotivation() {
+  if (sectionUnmotivationalPosters.classList.contains("hidden")) {
+    console.log("Error: unmotivational section should already be displayed!")
+  } else {
+    sectionUnmotivationalPosters.classList.add("hidden")
+    sectionMainPoster.classList.remove("hidden")
+  }
 }
 
 function makeAndDisplayPoster(event) {
