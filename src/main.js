@@ -1,14 +1,17 @@
 // query selector variables go here 👇
 //Keep these simple for now; refactor to utilize objects / createPoster() fn later
-let mainImage = document.querySelector(".poster-img")   //Contains src and alt attrs
+let sectionMainPoster = document.querySelector(".main-poster")
+let mainImage = document.querySelector(".poster-img")   //Contains both src and alt attrs
 let mainTitle = document.querySelector(".poster-title")
 let mainQuote = document.querySelector(".poster-quote")
+
 let buttonShowRandomPoster = document.querySelector(".show-random")
 let buttonMakeYourOwnPoster = document.querySelector(".show-form")
 let buttonSavedPosters = document.querySelector(".show-saved")
 let buttonTakeMeBack = document.querySelector(".show-main")     //This worries me; this class could easily be re-used somewhere else...
 let buttonBackToMain = document.querySelector(".back-to-main")  //Again, overlapping function with the above (not DRY really...or at the least, makes it less clear)
 let buttonShowMyPoster = document.querySelector(".make-poster")
+
 let posterForm = document.querySelector(".poster-form")   //Should be static and unique enough
 let sectionSavedPosters = document.querySelector(".saved-posters")
 
@@ -125,10 +128,10 @@ var currentPoster;
 
 //For page load, a random image should be chosen:
 // mainImage.addEventListener("PAGE_LOAD", randomDisplayedPoster)  NOPE THIS WOULD HAVE GOTTEN ME IN TROUBLE!
-window.addEventListener("load", randomDisplayedPoster)
+window.addEventListener("load", function wrapperFunction() { displayPoster(null) })
 
 //When random button is clicked, it should (re-)randomize the image:
-buttonShowRandomPoster.addEventListener("click", randomDisplayedPoster)
+buttonShowRandomPoster.addEventListener("click", function wrapperFunction() { displayPoster(null) })
 
 //When make own button clicked, should hide the current poster, and instead display the form (i.e. toggle visibility of BOTH)
 buttonMakeYourOwnPoster.addEventListener("click", toggleMakePosterForm)
@@ -146,8 +149,13 @@ formNewPoster.addEventListener("submit", makeAndDisplayPoster)
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
-function getRandomIndex(array) {
-  return Math.floor(Math.random() * array.length);
+// function getRandomIndex(array) {
+//   return Math.floor(Math.random() * array.length);
+// }
+
+//Refactored variant (more compact / self-contained)
+function getRandomElement(array) {
+  return array[Math.floor(Math.random() * array.length)]
 }
 
 function createPoster(imageURL, title, quote) {
@@ -161,51 +169,39 @@ function createPoster(imageURL, title, quote) {
 
 //Custom-built functions:
 
-//Start with separate random poster creation.  Later would like to have a single changeDisplayedPoster(posterObject) function, once we know how to handle args...
-function randomDisplayedPoster() {
-  mainImage.src = images[getRandomIndex(images)]
-  mainImage.alt = "Some motivational image here"    //Mostly to differentiate from default HTML one
-  mainTitle.innerText = titles[getRandomIndex(titles)]
-  mainQuote.innerText = quotes[getRandomIndex(quotes)]
+function displayPoster(poster) {
+  //Display the supplied poster.  If no poster provided, choose one at random
+  if (poster === null) {
+    poster = randomPoster()
+  }
+  mainImage.src = poster.imageURL
+  mainImage.alt = "Motivation image goes here"      //Mostly to differentiate from default HTML one
+  mainTitle.innerText = poster.title
+  mainQuote.innerText = poster.quote
 }
-// function changeDisplayedPoster(posterObject) {
-//   //Again, serious refactoring is in order here later...
-//   if (posterObject === null) {    //To make it very explicit!
-//     mainImage.src = images[getRandomIndex(images)]
-//     mainImage.alt = "Some motivational image here"    //Mostly to differentiate from default HTML one
-//     mainTitle.innerText = titles[getRandomIndex(titles)]
-//     mainQuote.innerText = quotes[getRandomIndex(quotes)]
-//   } else {
-//     //We have a specified poster - change it!
-//     mainImage.src = posterObject.imageURL
-//     mainImage.alt = "Some motivational image here"    //Mostly to differentiate from default HTML one
-//     mainTitle.innerText = posterObject.title
-//     mainQuote.innerText = posterObject.quote
-//   }
-// }
+
+function randomPoster() {
+  //If this is only used once (in displayPoster()), just move up there directly...
+  return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes))
+}
 
 function toggleMakePosterForm() {
   //Hide current poster
   //NOTE: incomplete: still a black border bar.  Need to target a 'larger' element / node...
-  mainImage.classList.toggle("hidden")
-  mainTitle.classList.toggle("hidden")
-  mainQuote.classList.toggle("hidden")
+  sectionMainPoster.classList.toggle("hidden")
 
   //Show form and allow interaction
   posterForm.classList.toggle("hidden")
 }
 
 function toggleSavedPosters() {
-  //Hide current poster
+  //Hide current poster (entire section - buttens included, etc.)
   //Again, redesign and refactor (since used above as well)
-  mainImage.classList.toggle("hidden")
-  mainTitle.classList.toggle("hidden")
-  mainQuote.classList.toggle("hidden")  
+  sectionMainPoster.classList.toggle("hidden")
 
   //Show saved posters, etc.
   //Maybe even refactor more broadly - pass node as argument if that's possible?
   sectionSavedPosters.classList.toggle("hidden")
-  
 }
 
 function takeMeBack() {
@@ -219,35 +215,34 @@ function backToMain() {
 function makeAndDisplayPoster(event) {
   //First, bypass default behavior.  This is apparently deprecated...so what is modern then?
   event.preventDefault()
-  //Collect data
+  //Collect data.  Later / fancier: do error checking, have user re-do if needed
   let formData = new FormData(formNewPoster)      //Had to look this up.  Alt might be to do usual button event and some other trickery?
+  //Alt: could grab .value on <input> tags
   let submittedImageURL = formData.get("poster-image-url")
   let submittedTitle = formData.get("poster-title")
   let submittedQuote = formData.get("poster-quote")
-
 
   //Create new poster (currentPoster is a global var, and thus accessible here...don't know if I like that)
   currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote)
   addPosterToLibrary(currentPoster)
 
-  console.log("currentPoster object: ", currentPoster)
-  
   //Toggle visibilities and display new poster (instead of random / previous)
-  mainImage.src = currentPoster.imageURL
-  mainImage.alt = "Some motivational image here"    //Mostly to differentiate from default HTML one
-  mainTitle.innerText = currentPoster.title
-  mainQuote.innerText = currentPoster.quote
+  displayPoster(currentPoster)
 
   takeMeBack()
 }
 
 
 function addPosterToLibrary(poster) {
-  //Probably a better way to do this later...
-  //Also, should refactor so that all of those arrays are objects!
-  images.push(poster.imageURL)
-  titles.push(poster.titles)
-  quotes.push(poster.quotes)
+  //NOTE: this only adds to the savedPosters[] array, NOT to the actual random images, titles, quotes.
+  //Might want to have this option as well later, which would go here.
+  savedPosters.push(poster)
+
+  // debugger
+
+  // images.push(poster.imageURL)
+  // titles.push(poster.title)
+  // quotes.push(poster.quote)
 }
 
 
@@ -256,6 +251,7 @@ function addPosterToLibrary(poster) {
 //   console.log("Found random image URL: ", images[getRandomIndex(images)])
 
 // }
+// debugger
 
 //Some scratchin' beforehand (can remove in a little while)
 // console.log("Hello, world!");
