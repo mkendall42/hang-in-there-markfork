@@ -20,6 +20,7 @@ let posterForm = document.querySelector(".poster-form")   //Should be static and
 let sectionSavedPosters = document.querySelector(".saved-posters")
 // let postersGrid = document.querySelector(".saved-posters-grid")
 let sectionUnmotivationalPosters = document.querySelector(".unmotivational-posters")
+let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
 
 //These REALLY make more sense in the function further down, but ok...
 // let posterImageURL = document.querySelector()
@@ -130,7 +131,7 @@ var savedPosters = [];
 var currentPoster;
 
 //Unmotivational poster data (assume it was e.g. pulled from a database)
-let unmotivationalPosters = [
+let rawUnmotivationalPosters = [
   {
     name: "FAILURE",
     description: "Why bother trying? It's probably not worth it.",
@@ -252,11 +253,29 @@ let unmotivationalPosters = [
     img_url: "./assets/doubt.jpg",
   }
 ];
+var unmotivationalPosters = []
+var arePostersLoaded = false      //Controls loading raw poster data only once (alt could be to call cleanData() during initial page load)
 
+
+//MOVE THIS TO FUNCTIONS REGION LATER!!!
+// async function cleanData(posters) {
+//   //Assume that we are modifying in-place the posters variable
+//   for (let i = 0; i < posters.length; i++) {
+//     unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description)
+//     await sleep(1)      //This will force a unique ID for each poster.  Also doesn't sleep exactly 1ms.  Seems awfully convoluted just to preserve the preexisting structure...
+//     //Alternate is to allow manual setting of IDs as a default arg
+//   }
+// }
+
+// function sleep(milliSeconds) {
+//   return new Promise(resolve => setTimeout(resolve, milliSeconds))
+// }
 function cleanData(posters) {
-  //Assume that we are modifying in-place the posters variable
+  //Yep, the async function was definitely causing issues - would only load the FIRST unmotivational poster the first time
   for (let i = 0; i < posters.length; i++) {
-    posters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description)
+    unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description, "Unmotivational poster text goes here")
+    //Temporary fix: force the IDs to increment by one so they're truly unique.  Turns out ms aren't precise enough for this operation (they all load in < 1 ms)...
+    unmotivationalPosters[i].id += i
   }
 }
 
@@ -289,6 +308,11 @@ buttonSaveThisPoster.addEventListener("click", savePoster)
 buttonUnmotivationalPosters.addEventListener("click", showUnmotivationalPosters)
 buttonReturnToMotivation.addEventListener("click", backToMotivation)
 
+//Set event listener for region on unmotivational poster page.
+//I decided to home in closer to the images to help with recovering the array element w/ the HTML element (see deletePoster() for complexity)
+// sectionUnmotivationalPosters.addEventListener("dblclick", deletePoster)
+unmotivationalGrid.addEventListener("dblclick", deletePoster)
+
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
 // function getRandomIndex(array) {
@@ -300,13 +324,14 @@ function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
 
-function createPoster(imageURL, title, quote) {
-  //NOTE: maybe add default alt text here so it doesn't keep appearing elsewhere?  How to handle default parameter?
+function createPoster(imageURL, title, quote, alternateText = "") {
+  //Added default alt text here so it doesn't have to keep appearing elsewhere.
   return {
     id: Date.now(), 
     imageURL: imageURL, 
     title: title, 
-    quote: quote
+    quote: quote,
+    altText: alternateText
   }
 }
 
@@ -322,14 +347,14 @@ function displayPoster(poster) {
   currentPoster = poster
 
   mainImage.src = poster.imageURL
-  mainImage.alt = "Motivation image goes here"      //Mostly to differentiate from default HTML one
+  mainImage.alt = poster.altText      //Mostly to differentiate from default HTML one
   mainTitle.innerText = poster.title
   mainQuote.innerText = poster.quote
 }
 
 function randomPoster() {
   //If this is only used once (in displayPoster()), just move up there directly...
-  return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes))
+  return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
 }
 
 function toggleMakePosterForm() {
@@ -360,7 +385,7 @@ function toggleSavedPosters() {
     // sectionSavedPosters.innerHTML += 
     //Maybe create a whole new <div>?
     postersGrid.innerHTML += `<div class="mini-poster">
-                              \t<img src="${savedPosters[i].imageURL}" alt="Motivation image goes here">
+                              \t<img src="${savedPosters[i].imageURL}" alt=${savedPosters[i].altText}>
                               \t<h2>${savedPosters[i].title}</h2>
                               \t<h4>${savedPosters[i].quote}</h4>
                               </div>`
@@ -377,14 +402,26 @@ function showUnmotivationalPosters() {
   //Get our unmotivational poster data array ready!
   //NOTE: this can only be run ONCE (cleaning cleaned data will confuse the moethods!)
   //FIX THIS / MOVE IT ACCORDINGLY LATER!!!
-  cleanData(unmotivationalPosters)
+  //Update: I've decided to send raw data into cleaned variable now; this would just make more sense in most cases, I think
+  if (!arePostersLoaded) {
+    cleanData(rawUnmotivationalPosters)
+    arePostersLoaded = true
+    console.log("Loaded unmotivational posters")
+  }
 
-  debugger
+  // debugger
   
-
-  let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
+  //NOTE: these are REQUIRED to be at the top of the document.  Argh!
   unmotivationalGrid.innerHTML = ""
-
+  for (let i = 0; i < unmotivationalPosters.length; i++) {
+    //For now, just format like saved posters page.
+    //ADJUST LATER!
+    unmotivationalGrid.innerHTML += `<div class="mini-poster" id="${unmotivationalPosters[i].id}">
+                                      \t<img src="${unmotivationalPosters[i].imageURL}" alt="${unmotivationalPosters[i].altText}">
+                                      \t<h2>${unmotivationalPosters[i].title}</h2>
+                                      \t<h4>${unmotivationalPosters[i].quote}</h4>
+                                      </div>`
+  }
 }
 
 function takeMeBack() {
@@ -455,6 +492,52 @@ function addPosterToLibrary(poster) {
   // quotes.push(poster.quote)
 }
 
+function deletePoster() {
+  //This is called when user double-clicks on 
+  //NOTE: 'event' is apparently deprecated, and can be fragile.  I should look into using 'Event' instead...
+
+  debugger
+
+  let currentElement = event.target
+  
+  if (!currentElement.classList.contains("unmotivational-posters-grid")) {
+    //We found an actual poster - delete it both from HTML and the data array
+    //One way to do this is to remove it from the array, then re-generate the innerHTML (maybe make it its own function?)
+    // event.target
+    //Hmmm, I feel like I need to 'backtrace' from the element to figure out the array element it came from.
+    //This seems awfully awkward / clunky, and not efficient.  There must be a better way...
+    //Also, it's ambiguous what *part* of the <div> the user will click on, so the current element or a child / parent element might need to actually be accessed
+    //This is getting ridiculous, I'm gonna use IDs (which means rewriting the id: property too!)
+    //Even IDs are a problem...they won't exist for e.g. the <h2> title element!  WTF?!
+
+    //Ok, I think I have a solution.  Look at current element's class === ".mini-poster"; if not, move up to the parent iteratively until there.
+    //THEN we can use the ID to finally match it with the array element
+    //Again, this is RIDICULOUSLY convoluted...
+    while (!currentElement.classList.contains("mini-poster")) {
+      //I'm counting on this not getting stuck in the loop...
+      currentElement = currentElement.parentElement
+    }
+
+    
+    for (let i = 0; i < unmotivationalPosters.length; i++) {
+      if (unmotivationalPosters[i].id === Number(currentElement.id)) {
+        //Remove it from the array!
+        unmotivationalPosters.splice(i, 1)
+        console.log("Shrunk poster array: ", unmotivationalPosters)
+        currentElement.classList.add("hidden")      //Hack-ey approach, but work visually (and functionally next load won't bring it in)
+        break
+      }
+    }
+    //The optimal approach would be to simply remove the (nested) HTML elements.
+    //Alternately, could call showUnmotivationalPosters()
+    //OR: might be able to use element.removeChild() to delete HTML child node (and hopefully recursively)
+
+
+    //MDN: .closest() - check this out!
+    //Could use .getElementsByTagName() -> returns an array of children elements matching given tag(s)
+    //.currentTarget -> bubbles up to the parent target for event listener
+  }
+}
 
 //Trying out finding a random poster:
 // for (let i = 0; i < 10; i++) {
