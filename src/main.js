@@ -5,6 +5,15 @@ let mainImage = document.querySelector(".poster-img")   //Contains both src and 
 let mainTitle = document.querySelector(".poster-title")
 let mainQuote = document.querySelector(".poster-quote")
 
+let sectionPosterForm = document.querySelector(".poster-form")   //Should be static and unique enough
+let formNewPoster = document.querySelector("#new-poster-form")   //I manually created this ID to uniquely locate it
+
+let sectionSavedPosters = document.querySelector(".saved-posters")
+let postersGrid = document.querySelector(".saved-posters-grid")
+
+let sectionUnmotivationalPosters = document.querySelector(".unmotivational-posters")
+let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
+
 let buttonShowRandomPoster = document.querySelector(".show-random")
 let buttonMakeYourOwnPoster = document.querySelector(".show-form")
 let buttonSavedPosters = document.querySelector(".show-saved")
@@ -14,19 +23,6 @@ let buttonShowMyPoster = document.querySelector(".make-poster")
 let buttonSaveThisPoster = document.querySelector(".save-poster")
 let buttonUnmotivationalPosters = document.querySelector(".show-unmotivational")
 let buttonReturnToMotivation = document.querySelector("#return-to-main")
-
-let posterForm = document.querySelector(".poster-form")   //Should be static and unique enough
-
-let sectionSavedPosters = document.querySelector(".saved-posters")
-// let postersGrid = document.querySelector(".saved-posters-grid")
-let sectionUnmotivationalPosters = document.querySelector(".unmotivational-posters")
-let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
-
-//These REALLY make more sense in the function further down, but ok...
-// let posterImageURL = document.querySelector()
-// let posterTitle = document.querySelector()
-// let posterQuote = document.querySelector()
-let formNewPoster = document.querySelector("#new-poster-form")   //I manually created this ID to uniquely locate it
 
 // we've provided you with some data to work with 👇
 // tip: you can tuck this data out of view with the dropdown found near the line number where the variable is declared 
@@ -280,38 +276,48 @@ function cleanData(posters) {
 }
 
 
+
 // event listeners go here 👇
 
 //For page load, a random image should be chosen:
 // mainImage.addEventListener("PAGE_LOAD", randomDisplayedPoster)  NOPE THIS WOULD HAVE GOTTEN ME IN TROUBLE!
 window.addEventListener("load", function wrapperFunction() { displayPoster(null) })
-
 //When random button is clicked, it should (re-)randomize the image:
 buttonShowRandomPoster.addEventListener("click", function wrapperFunction() { displayPoster(null) })
 
+
+//These buttons change visibility of sections on the page:
 //When make own button clicked, should hide the current poster, and instead display the form (i.e. toggle visibility of BOTH)
-buttonMakeYourOwnPoster.addEventListener("click", toggleMakePosterForm)
-
+buttonMakeYourOwnPoster.addEventListener("click", showMakePosterForm)
 //When show saved button clicked, hide current poster, and display saved posters (smaller)
-buttonSavedPosters.addEventListener("click", toggleSavedPosters)
-
-//Get back to the main page!  (Again, kinda repetitive here...)
-buttonTakeMeBack.addEventListener("click", takeMeBack)
-buttonBackToMain.addEventListener("click", backToMain)
-
-buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
-
-formNewPoster.addEventListener("submit", makeAndDisplayPoster)
-
-buttonSaveThisPoster.addEventListener("click", savePoster)
-
+buttonSavedPosters.addEventListener("click", showSavedPosters)
 buttonUnmotivationalPosters.addEventListener("click", showUnmotivationalPosters)
-buttonReturnToMotivation.addEventListener("click", backToMotivation)
+
+buttonTakeMeBack.addEventListener("click", function wrapperFunction() {
+  hideSection(sectionPosterForm)
+  showSection(sectionMainPoster)
+})
+buttonBackToMain.addEventListener("click", function wrapperFunction() {
+  hideSection(sectionSavedPosters)
+  showSection(sectionMainPoster)
+})
+buttonReturnToMotivation.addEventListener("click", function wrapperFunction() {
+  hideSection(sectionUnmotivationalPosters)
+  showSection(sectionMainPoster)
+})
+
+//Other functions (involving more than just 'traveling' / changing visibility)
+buttonSaveThisPoster.addEventListener("click", savePoster)
+formNewPoster.addEventListener("submit", makeAndDisplayPoster)
+//Do I need this one?  I think the submit (button) is covered above...
+buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
 
 //Set event listener for region on unmotivational poster page.
 //I decided to home in closer to the images to help with recovering the array element w/ the HTML element (see deletePoster() for complexity)
 // sectionUnmotivationalPosters.addEventListener("dblclick", deletePoster)
 unmotivationalGrid.addEventListener("dblclick", deletePoster)
+
+
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
@@ -319,7 +325,7 @@ unmotivationalGrid.addEventListener("dblclick", deletePoster)
 //   return Math.floor(Math.random() * array.length);
 // }
 
-//Refactored variant (more compact / self-contained)
+//Refactored variant of provided function (more compact / self-contained)
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
@@ -327,7 +333,7 @@ function getRandomElement(array) {
 function createPoster(imageURL, title, quote, alternateText = "") {
   //Added default alt text here so it doesn't have to keep appearing elsewhere.
   return {
-    id: Date.now(), 
+    id: Date.now(),       //See needed adjustment in cleanData() function
     imageURL: imageURL, 
     title: title, 
     quote: quote,
@@ -347,7 +353,7 @@ function displayPoster(poster) {
   currentPoster = poster
 
   mainImage.src = poster.imageURL
-  mainImage.alt = poster.altText      //Mostly to differentiate from default HTML one
+  mainImage.alt = poster.altText
   mainTitle.innerText = poster.title
   mainQuote.innerText = poster.quote
 }
@@ -357,26 +363,17 @@ function randomPoster() {
   return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
 }
 
-function toggleMakePosterForm() {
-  //Hide current poster
-  //NOTE: incomplete: still a black border bar.  Need to target a 'larger' element / node...
-  sectionMainPoster.classList.toggle("hidden")
-
-  //Show form and allow interaction
-  posterForm.classList.toggle("hidden")
+function showMakePosterForm() {
+  hideSection(sectionMainPoster)
+  showSection(sectionPosterForm)
 }
 
-function toggleSavedPosters() {
+function showSavedPosters() {
   //Hide current poster (entire section - buttens included, etc.)
-  //Again, redesign and refactor (since used above as well)
-  sectionMainPoster.classList.toggle("hidden")
-
-  //Show saved posters, etc.
-  //Maybe even refactor more broadly - pass node as argument if that's possible?
-  sectionSavedPosters.classList.toggle("hidden")
+  hideSection(sectionMainPoster)
+  showSection(sectionSavedPosters)
 
   //Now display the actual saved photos
-  let postersGrid = document.querySelector(".saved-posters-grid")
   postersGrid.innerHTML = ""          //Needed, or you get some fun MTG-style cumulative upkeep effects!
   for (let i = 0; i < savedPosters.length; i++) {
     //Alt: maybe do the each 'enumerable' later?
@@ -385,19 +382,16 @@ function toggleSavedPosters() {
     // sectionSavedPosters.innerHTML += 
     //Maybe create a whole new <div>?
     postersGrid.innerHTML += `<div class="mini-poster">
-                              \t<img src="${savedPosters[i].imageURL}" alt=${savedPosters[i].altText}>
+                              \t<img src="${savedPosters[i].imageURL}" alt="${savedPosters[i].altText}">
                               \t<h2>${savedPosters[i].title}</h2>
                               \t<h4>${savedPosters[i].quote}</h4>
                               </div>`
-    // savedPosters[i]
   }
 }
 
 function showUnmotivationalPosters() {
-  //Same idea as for create new, or show posters
-  // sectionUnmotivationalPosters.classList.toggle("hidden")   //Toggle is getting me in trouble...
-  sectionUnmotivationalPosters.classList.remove("hidden")
-  sectionMainPoster.classList.add("hidden")
+  hideSection(sectionMainPoster)
+  showSection(sectionUnmotivationalPosters)
 
   //Get our unmotivational poster data array ready!
   //NOTE: this can only be run ONCE (cleaning cleaned data will confuse the moethods!)
@@ -409,9 +403,6 @@ function showUnmotivationalPosters() {
     console.log("Loaded unmotivational posters")
   }
 
-  // debugger
-  
-  //NOTE: these are REQUIRED to be at the top of the document.  Argh!
   unmotivationalGrid.innerHTML = ""
   for (let i = 0; i < unmotivationalPosters.length; i++) {
     //For now, just format like saved posters page.
@@ -421,23 +412,6 @@ function showUnmotivationalPosters() {
                                       \t<h2>${unmotivationalPosters[i].title}</h2>
                                       \t<h4>${unmotivationalPosters[i].quote}</h4>
                                       </div>`
-  }
-}
-
-function takeMeBack() {
-  toggleMakePosterForm()
-}
-
-function backToMain() {
-  toggleSavedPosters()    //This had unintended effects when I was using innerHTML += before.  Rewrite this eventually, not optimal...
-}
-
-function backToMotivation() {
-  if (sectionUnmotivationalPosters.classList.contains("hidden")) {
-    console.log("Error: unmotivational section should already be displayed!")
-  } else {
-    sectionUnmotivationalPosters.classList.add("hidden")
-    sectionMainPoster.classList.remove("hidden")
   }
 }
 
@@ -452,15 +426,15 @@ function makeAndDisplayPoster(event) {
   let submittedQuote = formData.get("poster-quote")
 
   //Create new poster (currentPoster is a global var, and thus accessible here...don't know if I like that)
-  currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote)
+  currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
 
   //Don't actually save the poster yet (that is done on the main page...)
   // addPosterToLibrary(currentPoster)
 
   //Toggle visibilities and display new poster (instead of random / previous)
   displayPoster(currentPoster)
-
-  takeMeBack()
+  hideSection(sectionPosterForm)
+  showSection(sectionMainPoster)
 }
 
 function savePoster() {
@@ -474,9 +448,6 @@ function addPosterToLibrary(poster) {
 
   //Verify this is a unique entry.  It is unique only if everything other than the id is different (since that had BETTER change!)
   for (let i = 0; i < savedPosters.length; i++) {
-
-    // debugger
-
     if (savedPosters[i].imageURL === poster.imageURL && savedPosters[i].title === poster.title && savedPosters[i].quote === poster.quote) {
       return
     }
@@ -484,20 +455,11 @@ function addPosterToLibrary(poster) {
 
   //Actually save it
   savedPosters.push(poster)
-
-  // debugger
-
-  // images.push(poster.imageURL)
-  // titles.push(poster.title)
-  // quotes.push(poster.quote)
 }
 
 function deletePoster() {
   //This is called when user double-clicks on 
   //NOTE: 'event' is apparently deprecated, and can be fragile.  I should look into using 'Event' instead...
-
-  debugger
-
   let currentElement = event.target
   
   if (!currentElement.classList.contains("unmotivational-posters-grid")) {
@@ -539,18 +501,12 @@ function deletePoster() {
   }
 }
 
-//Trying out finding a random poster:
-// for (let i = 0; i < 10; i++) {
-//   console.log("Found random image URL: ", images[getRandomIndex(images)])
 
-// }
-// debugger
+//These almost seem silly, but do provide good readability, so yeah...
+function hideSection(section) {
+  section.classList.add("hidden")
+}
 
-//Some scratchin' beforehand (can remove in a little while)
-// console.log("Hello, world!");
-// console.log("quotes: ", quotes);
-// console.log("savedPosters: ", savedPosters);
-
-// //Try modifying the array and check contents:
-// savedPosters.push("some random poster");
-// console.log("new savedPosters: ", savedPosters);
+function showSection(section) {
+  section.classList.remove("hidden")
+}
