@@ -7,6 +7,9 @@ let mainQuote = document.querySelector(".poster-quote")
 
 let sectionPosterForm = document.querySelector(".poster-form")   //Should be static and unique enough
 let formNewPoster = document.querySelector("#new-poster-form")   //I manually created this ID to uniquely locate it
+let inputImageURL = document.querySelector("#poster-image-url")
+let inputTitle = document.querySelector("#poster-title")
+let inputQuote = document.querySelector("#poster-quote")
 
 let sectionSavedPosters = document.querySelector(".saved-posters")
 let postersGrid = document.querySelector(".saved-posters-grid")
@@ -23,6 +26,7 @@ let buttonShowMyPoster = document.querySelector(".make-poster")
 let buttonSaveThisPoster = document.querySelector(".save-poster")
 let buttonUnmotivationalPosters = document.querySelector(".show-unmotivational")
 let buttonReturnToMotivation = document.querySelector("#return-to-main")
+
 
 // we've provided you with some data to work with 👇
 // tip: you can tuck this data out of view with the dropdown found near the line number where the variable is declared 
@@ -407,7 +411,7 @@ function showUnmotivationalPosters() {
   for (let i = 0; i < unmotivationalPosters.length; i++) {
     //For now, just format like saved posters page.
     //ADJUST LATER!
-    unmotivationalGrid.innerHTML += `<div class="mini-poster" id="${unmotivationalPosters[i].id}">
+    unmotivationalGrid.innerHTML += `<div class="mini-unmotivational-poster" id="${unmotivationalPosters[i].id}">
                                       \t<img src="${unmotivationalPosters[i].imageURL}" alt="${unmotivationalPosters[i].altText}">
                                       \t<h2>${unmotivationalPosters[i].title}</h2>
                                       \t<h4>${unmotivationalPosters[i].quote}</h4>
@@ -418,6 +422,10 @@ function showUnmotivationalPosters() {
 function makeAndDisplayPoster(event) {
   //First, bypass default behavior.  This is apparently deprecated...so what is modern then?
   event.preventDefault()
+
+  //If we want to do data validation, would it go here, or do I need another function w/ a different event listtener?  Probably this...
+
+
   //Collect data.  Later / fancier: do error checking, have user re-do if needed
   let formData = new FormData(formNewPoster)      //Had to look this up.  Alt might be to do usual button event and some other trickery?
   //Alt: could grab .value on <input> tags
@@ -461,44 +469,74 @@ function deletePoster() {
   //This is called when user double-clicks on 
   //NOTE: 'event' is apparently deprecated, and can be fragile.  I should look into using 'Event' instead...
   let currentElement = event.target
-  
-  if (!currentElement.classList.contains("unmotivational-posters-grid")) {
-    //We found an actual poster - delete it both from HTML and the data array
-    //One way to do this is to remove it from the array, then re-generate the innerHTML (maybe make it its own function?)
-    // event.target
-    //Hmmm, I feel like I need to 'backtrace' from the element to figure out the array element it came from.
-    //This seems awfully awkward / clunky, and not efficient.  There must be a better way...
-    //Also, it's ambiguous what *part* of the <div> the user will click on, so the current element or a child / parent element might need to actually be accessed
-    //This is getting ridiculous, I'm gonna use IDs (which means rewriting the id: property too!)
-    //Even IDs are a problem...they won't exist for e.g. the <h2> title element!  WTF?!
 
-    //Ok, I think I have a solution.  Look at current element's class === ".mini-poster"; if not, move up to the parent iteratively until there.
-    //THEN we can use the ID to finally match it with the array element
-    //Again, this is RIDICULOUSLY convoluted...
-    while (!currentElement.classList.contains("mini-poster")) {
-      //I'm counting on this not getting stuck in the loop...
-      currentElement = currentElement.parentElement
-    }
+  debugger
+  
+  // if (!currentElement.classList.contains("unmotivational-posters-grid")) {
+  //   //We found an actual poster - delete it both from HTML and the data array
+  //   //One way to do this is to remove it from the array, then re-generate the innerHTML (maybe make it its own function?)
+  //   // event.target
+  //   //Hmmm, I feel like I need to 'backtrace' from the element to figure out the array element it came from.
+  //   //This seems awfully awkward / clunky, and not efficient.  There must be a better way...
+  //   //Also, it's ambiguous what *part* of the <div> the user will click on, so the current element or a child / parent element might need to actually be accessed
+  //   //This is getting ridiculous, I'm gonna use IDs (which means rewriting the id: property too!)
+  //   //Even IDs are a problem...they won't exist for e.g. the <h2> title element!  WTF?!
+
+  //   //Ok, I think I have a solution.  Look at current element's class === ".mini-poster"; if not, move up to the parent iteratively until there.
+  //   //THEN we can use the ID to finally match it with the array element
+  //   //Again, this is RIDICULOUSLY convoluted...
+  //   while (!currentElement.classList.contains("mini-poster")) {
+  //     //I'm counting on this not getting stuck in the loop...
+  //     currentElement = currentElement.parentElement
+  //   }
 
     
-    for (let i = 0; i < unmotivationalPosters.length; i++) {
-      if (unmotivationalPosters[i].id === Number(currentElement.id)) {
-        //Remove it from the array!
-        unmotivationalPosters.splice(i, 1)
-        console.log("Shrunk poster array: ", unmotivationalPosters)
-        currentElement.classList.add("hidden")      //Hack-ey approach, but work visually (and functionally next load won't bring it in)
-        break
-      }
-    }
-    //The optimal approach would be to simply remove the (nested) HTML elements.
-    //Alternately, could call showUnmotivationalPosters()
-    //OR: might be able to use element.removeChild() to delete HTML child node (and hopefully recursively)
+  //   for (let i = 0; i < unmotivationalPosters.length; i++) {
+  //     if (unmotivationalPosters[i].id === Number(currentElement.id)) {
+  //       //Remove it from the array!
+  //       unmotivationalPosters.splice(i, 1)
+  //       console.log("Shrunk poster array: ", unmotivationalPosters)
+  //       currentElement.classList.add("hidden")      //Hack-ey approach, but work visually (and functionally next load won't bring it in)
+  //       break
+  //     }
+  //   }
+  //   //The optimal approach would be to simply remove the (nested) HTML elements.
+  //   //Alternately, could call showUnmotivationalPosters()
+  //   //OR: might be able to use element.removeChild() to delete HTML child node (and hopefully recursively)
 
 
-    //MDN: .closest() - check this out!
-    //Could use .getElementsByTagName() -> returns an array of children elements matching given tag(s)
-    //.currentTarget -> bubbles up to the parent target for event listener
+  //   //MDN: .closest() - check this out!
+  //   //Could use .getElementsByTagName() -> returns an array of children elements matching given tag(s)
+  //   //.currentTarget -> bubbles up to the parent target for event listener
+
+  // }
+
+  //Alternate approach, using closest() function:
+  if (currentElement.classList.contains("unmotivational-posters-grid")) {
+    return
   }
+  //If we made it here, we clicked on something valid
+  currentElement = currentElement.closest("div")
+  // currentElement = currentElement.closest(".mini-poster")   //Does this work too?
+
+  for (let i = 0; i < unmotivationalPosters.length; i++) {
+    if (unmotivationalPosters[i].id === Number(currentElement.id)) {
+      //Found it!
+      unmotivationalPosters.splice(i, 1)
+      currentElement.classList.add("hidden")        //Again, hackey...but it serves the purpose for now
+      currentElement.remove()                       //What about this one?
+      break
+    }
+  }
+
+  unmotivationalPosters.forEach((poster, index) => {
+    if (poster.id === Number(currentElement.id)) {
+      unmotivationalPosters.splice(index, 1)
+      currentElement.remove()
+      // break                     //Hmm, this won't work for this 'enumerable'.  Then, this seems less effective...
+    }
+  })
+
 }
 
 

@@ -144,3 +144,49 @@ button:hover {
   margin-bottom: 10px;
   text-transform: uppercase;
 }
+
+/*Unmotivational posters section*/
+
+.unmotivational-posters-grid {
+  /*This is probably the best spot for implementing a flexbox arrangement*/
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;      /*Is this the best way to control this?*/
+  justify-content: center;
+}
+
+.mini-unmotivational-poster {
+  background: #888888;
+  border: none;
+  border-radius: 9px;
+  margin: 5px;
+  height: 250px;
+  width: 300px;
+  padding: 20px;
+}
+
+.mini-unmotivational-poster img {
+  height: 140px;    /*About a 3:2 aspect ratio - would be nice to preserve it*/
+  width: 210px;
+}
+
+.mini-unmotivational-poster h2 {
+  font-size: 1.4em;
+  /* font-size: 2vw; */
+  /*Would be nice to scale text down to fit box if needed*/
+  letter-spacing: 3px;
+  font-weight: normal;
+  padding: 8px 0px 5px 0px;
+  /* width: 90%; */
+}
+
+.mini-unmotivational-poster h4 {
+  color: white;
+  font-size: 0.8em;
+  /* letter-spacing: 1px; */
+  font-weight: normal;
+  width: 90%;
+  line-height: 1em;
+  /* text-transform: uppercase; */
+}
+
