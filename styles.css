@@ -147,8 +147,14 @@ button:hover {
 
 /*Unmotivational posters section*/
 
+.unmotivational-posters h2 {
+  font-size: 1.2em;
+  padding: 10px;
+}
+
 .unmotivational-posters button {
   margin: 16px;
+  font-size: 15px;
 }
 
 .unmotivational-posters-grid {

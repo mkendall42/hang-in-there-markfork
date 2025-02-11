@@ -338,7 +338,7 @@ function showSection(section) {
 function displayPoster(poster) {
   //Display the supplied poster, or a random one if none provided.
   if (poster === null) {
-    poster = randomPoster()
+    poster = createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
   }
 
   currentPoster = poster
@@ -349,12 +349,6 @@ function displayPoster(poster) {
   mainQuote.innerText = poster.quote
 }
 
-function randomPoster() {
-  //NOTE: THIS IS ONLY USED ONCE.  PROBABLY REMOVE THIS LATER...
-  //If this is only used once (in displayPoster()), just move up there directly...
-  return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
-}
-
 function savePoster() {
   //NOTE: PROBABLY DELETE LATER, SINCE IT ONLY APPEARS ONCE!!!
   addPosterToLibrary(currentPoster)
@@ -362,7 +356,7 @@ function savePoster() {
 }
 
 function addPosterToLibrary(poster) {
-  //Verify this is a unique entry.  It is unique only if everything other than the id is different (since that had BETTER change!)
+  //Verify this is a unique entry.  It is unique only if everything other than the id is different.
   for (let i = 0; i < savedPosters.length; i++) {
     if (savedPosters[i].imageURL === poster.imageURL && savedPosters[i].title === poster.title && savedPosters[i].quote === poster.quote) {
       return
@@ -384,7 +378,7 @@ function makeAndDisplayPoster(event) {
   //First, bypass default behavior.  Note that 'event' is apparently deprecated...so what is modern then?
   event.preventDefault()
 
-  //If we want to do data validation, would it go here, or do I need another function w/ a different event listtener?  Probably this...
+  //If we want to do data validation, would it go here, or do I need another function w/ a different event listener?  Probably this...
   //Options: need to monitor as keys are pressed / data entered to determine if button can be pressed or not.
   //One way to do this is via an event listender, like this:
   // inputImageURL.addEventListener("selectionchange", FUNCTION)
@@ -403,6 +397,7 @@ function makeAndDisplayPoster(event) {
   let submittedImageURL = formData.get("poster-image-url")
   let submittedTitle = formData.get("poster-title")
   let submittedQuote = formData.get("poster-quote")
+  formNewPoster.reset()
 
   currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
 
@@ -415,14 +410,11 @@ function makeAndDisplayPoster(event) {
 //Section Saved Posters functions:
 
 function showSavedPosters() {
-  //Hide current poster (entire section - buttens included, etc.)
   hideSection(sectionMainPoster)
   showSection(sectionSavedPosters)
 
-  //Now display the actual saved photos
   postersGrid.innerHTML = ""          //Needed, or you get some fun MTG-style cumulative upkeep effects!
   for (let i = 0; i < savedPosters.length; i++) {
-    //Alt: maybe do the each 'enumerable' later?
     postersGrid.innerHTML += `<div class="mini-poster">
                               \t<img src="${savedPosters[i].imageURL}" alt="${savedPosters[i].altText}">
                               \t<h2>${savedPosters[i].title}</h2>
@@ -437,11 +429,10 @@ function showUnmotivationalPosters() {
   hideSection(sectionMainPoster)
   showSection(sectionUnmotivationalPosters)
 
-  //Only load the posters once (for efficiency - for bigger datasets)
+  //Only load the posters once (for efficiency - especially for bigger datasets)
   if (!arePostersLoaded) {
     cleanData(rawUnmotivationalPosters)
     arePostersLoaded = true
-    console.log("Loaded unmotivational posters")
   }
 
   unmotivationalGrid.innerHTML = ""
@@ -455,64 +446,15 @@ function showUnmotivationalPosters() {
 }
 
 function deletePoster() {
-  //NOTE: 'event' is apparently deprecated, and can be fragile.  I should look into using 'Event' instead...
-  let currentElement = event.target
-
-  // debugger
+  //Refactored based on learning about .closest(); also did another variant 'bubbling up' to parent element before
+  if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
+    let remainingPosters = unmotivationalPosters.filter((poster) => {
+      return poster.id !== Number(currentElement.id)
+    })
   
-  // if (!currentElement.classList.contains("unmotivational-posters-grid")) {
-  //   //We found an actual poster - delete it both from HTML and the data array
-  //   //One way to do this is to remove it from the array, then re-generate the innerHTML (maybe make it its own function?)
-  //   // event.target
-  //   //Hmmm, I feel like I need to 'backtrace' from the element to figure out the array element it came from.
-  //   //This seems awfully awkward / clunky, and not efficient.  There must be a better way...
-  //   //Also, it's ambiguous what *part* of the <div> the user will click on, so the current element or a child / parent element might need to actually be accessed
-  //   //This is getting ridiculous, I'm gonna use IDs (which means rewriting the id: property too!)
-  //   //Even IDs are a problem...they won't exist for e.g. the <h2> title element!  WTF?!
-
-  //   //Ok, I think I have a solution.  Look at current element's class === ".mini-poster"; if not, move up to the parent iteratively until there.
-  //   //THEN we can use the ID to finally match it with the array element
-  //   //Again, this is RIDICULOUSLY convoluted...
-  //   while (!currentElement.classList.contains("mini-poster")) {
-  //     //I'm counting on this not getting stuck in the loop...
-  //     currentElement = currentElement.parentElement
-  //   }
-
-    
-  //   for (let i = 0; i < unmotivationalPosters.length; i++) {
-  //     if (unmotivationalPosters[i].id === Number(currentElement.id)) {
-  //       //Remove it from the array!
-  //       unmotivationalPosters.splice(i, 1)
-  //       console.log("Shrunk poster array: ", unmotivationalPosters)
-  //       currentElement.classList.add("hidden")      //Hack-ey approach, but work visually (and functionally next load won't bring it in)
-  //       break
-  //     }
-  //   }
-  //   //The optimal approach would be to simply remove the (nested) HTML elements.
-  //   //Alternately, could call showUnmotivationalPosters()
-  //   //OR: might be able to use element.removeChild() to delete HTML child node (and hopefully recursively)
-
-
-  //   //MDN: .closest() - check this out!
-  //   //Could use .getElementsByTagName() -> returns an array of children elements matching given tag(s)
-  //   //.currentTarget -> bubbles up to the parent target for event listener
-
-  // }
-
-  //Alternate approach, using closest() function:
-  if (currentElement.classList.contains("unmotivational-posters-grid")) {
-    return
+    unmotivationalPosters = remainingPosters
+    currentElement.remove()
   }
-  //If we made it here, we clicked on something valid
-  currentElement = currentElement.closest("div")
-
-  //Refactored version based on recently learned .filter()
-  let remainingPosters = unmotivationalPosters.filter((poster) => {
-    return poster.id !== Number(currentElement.id)
-  })
-
-  unmotivationalPosters = remainingPosters
-  currentElement.remove()
 }
 
 
