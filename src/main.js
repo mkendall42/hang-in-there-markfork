@@ -1,7 +1,7 @@
 // query selector variables go here 👇
-//Keep these simple for now; refactor to utilize objects / createPoster() fn later
+
 let sectionMainPoster = document.querySelector(".main-poster")
-let mainImage = document.querySelector(".poster-img")   //Contains both src and alt attrs
+let mainImage = document.querySelector(".poster-img")
 let mainTitle = document.querySelector(".poster-title")
 let mainQuote = document.querySelector(".poster-quote")
 
@@ -26,6 +26,7 @@ let buttonShowMyPoster = document.querySelector(".make-poster")
 let buttonSaveThisPoster = document.querySelector(".save-poster")
 let buttonUnmotivationalPosters = document.querySelector(".show-unmotivational")
 let buttonReturnToMotivation = document.querySelector("#return-to-main")
+
 
 
 // we've provided you with some data to work with 👇
@@ -257,46 +258,18 @@ var unmotivationalPosters = []
 var arePostersLoaded = false      //Controls loading raw poster data only once (alt could be to call cleanData() during initial page load)
 
 
-//MOVE THIS TO FUNCTIONS REGION LATER!!!
-// async function cleanData(posters) {
-//   //Assume that we are modifying in-place the posters variable
-//   for (let i = 0; i < posters.length; i++) {
-//     unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description)
-//     await sleep(1)      //This will force a unique ID for each poster.  Also doesn't sleep exactly 1ms.  Seems awfully convoluted just to preserve the preexisting structure...
-//     //Alternate is to allow manual setting of IDs as a default arg
-//   }
-// }
-
-// function sleep(milliSeconds) {
-//   return new Promise(resolve => setTimeout(resolve, milliSeconds))
-// }
-function cleanData(posters) {
-  //Yep, the async function was definitely causing issues - would only load the FIRST unmotivational poster the first time
-  for (let i = 0; i < posters.length; i++) {
-    unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description, "Unmotivational poster text goes here")
-    //Temporary fix: force the IDs to increment by one so they're truly unique.  Turns out ms aren't precise enough for this operation (they all load in < 1 ms)...
-    unmotivationalPosters[i].id += i
-  }
-}
-
-
 
 // event listeners go here 👇
 
 //For page load, a random image should be chosen:
-// mainImage.addEventListener("PAGE_LOAD", randomDisplayedPoster)  NOPE THIS WOULD HAVE GOTTEN ME IN TROUBLE!
 window.addEventListener("load", function wrapperFunction() { displayPoster(null) })
 //When random button is clicked, it should (re-)randomize the image:
 buttonShowRandomPoster.addEventListener("click", function wrapperFunction() { displayPoster(null) })
 
-
 //These buttons change visibility of sections on the page:
-//When make own button clicked, should hide the current poster, and instead display the form (i.e. toggle visibility of BOTH)
 buttonMakeYourOwnPoster.addEventListener("click", showMakePosterForm)
-//When show saved button clicked, hide current poster, and display saved posters (smaller)
 buttonSavedPosters.addEventListener("click", showSavedPosters)
 buttonUnmotivationalPosters.addEventListener("click", showUnmotivationalPosters)
-
 buttonTakeMeBack.addEventListener("click", function wrapperFunction() {
   hideSection(sectionPosterForm)
   showSection(sectionMainPoster)
@@ -314,46 +287,60 @@ buttonReturnToMotivation.addEventListener("click", function wrapperFunction() {
 buttonSaveThisPoster.addEventListener("click", savePoster)
 formNewPoster.addEventListener("submit", makeAndDisplayPoster)
 //Do I need this one?  I think the submit (button) is covered above...
-buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
+// buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
 
-//Set event listener for region on unmotivational poster page.
-//I decided to home in closer to the images to help with recovering the array element w/ the HTML element (see deletePoster() for complexity)
-// sectionUnmotivationalPosters.addEventListener("dblclick", deletePoster)
+//Home in one level (parent) above actual poster divs to help with recovering the array element w/ the HTML element (see deletePoster() for complexity)
 unmotivationalGrid.addEventListener("dblclick", deletePoster)
 
 
 
 // functions and event handlers go here 👇
 // (we've provided two to get you started)!
-// function getRandomIndex(array) {
-//   return Math.floor(Math.random() * array.length);
-// }
 
-//Refactored variant of provided function (more compact / self-contained)
+//General-purpose / not belonging to a section functions:
+
+//Refactored variant of provided function (this is more compact / self-contained)
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
 
 function createPoster(imageURL, title, quote, alternateText = "") {
-  //Added default alt text here so it doesn't have to keep appearing elsewhere.
   return {
-    id: Date.now(),       //See needed adjustment in cleanData() function
+    // id: Date.now(),       //When called in rapid succession, 1 ms precision is insufficient...
+    id: Math.floor(Math.random() * 9e8 + 1e8),    //Needed to ensure ~unique ID (could repeat, but P ~ 10^-9)
     imageURL: imageURL, 
     title: title, 
     quote: quote,
-    altText: alternateText
+    altText: alternateText  //Also added default alt text so it doesn't have to appear in arbitrary locations
   }
 }
 
-//Custom-built functions:
+function cleanData(posters) {
+  //Yep, the async function was definitely causing issues - would only load the FIRST unmotivational poster the first time
+  for (let i = 0; i < posters.length; i++) {
+    unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description, "Unmotivational poster text goes here")
+    //Temporary fix: force the IDs to increment by one so they're truly unique.  Turns out ms aren't precise enough for this operation (they all load in < 1 ms)...
+    unmotivationalPosters[i].id += i
+  }
+}
+
+function hideSection(section) {
+  section.classList.add("hidden")
+}
+
+function showSection(section) {
+  section.classList.remove("hidden")
+}
+
+
+//Section Main Page functions:
 
 function displayPoster(poster) {
-  //Display the supplied poster.  If no poster provided, choose one at random
+  //Display the supplied poster, or a random one if none provided.
   if (poster === null) {
     poster = randomPoster()
   }
 
-  //By default, set the currentPoster var when this function is called (might change later?)
   currentPoster = poster
 
   mainImage.src = poster.imageURL
@@ -363,14 +350,69 @@ function displayPoster(poster) {
 }
 
 function randomPoster() {
+  //NOTE: THIS IS ONLY USED ONCE.  PROBABLY REMOVE THIS LATER...
   //If this is only used once (in displayPoster()), just move up there directly...
   return createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
 }
+
+function savePoster() {
+  //NOTE: PROBABLY DELETE LATER, SINCE IT ONLY APPEARS ONCE!!!
+  addPosterToLibrary(currentPoster)
+  //Might have additional functionality later, like feedback to the user that the operation was successful or not (e.g. duplicate, or go to saved pics page)
+}
+
+function addPosterToLibrary(poster) {
+  //Verify this is a unique entry.  It is unique only if everything other than the id is different (since that had BETTER change!)
+  for (let i = 0; i < savedPosters.length; i++) {
+    if (savedPosters[i].imageURL === poster.imageURL && savedPosters[i].title === poster.title && savedPosters[i].quote === poster.quote) {
+      return
+    }
+  }
+
+  savedPosters.push(poster)
+}
+
+
+//Section Make Poster Form functions:
 
 function showMakePosterForm() {
   hideSection(sectionMainPoster)
   showSection(sectionPosterForm)
 }
+
+function makeAndDisplayPoster(event) {
+  //First, bypass default behavior.  Note that 'event' is apparently deprecated...so what is modern then?
+  event.preventDefault()
+
+  //If we want to do data validation, would it go here, or do I need another function w/ a different event listtener?  Probably this...
+  //Options: need to monitor as keys are pressed / data entered to determine if button can be pressed or not.
+  //One way to do this is via an event listender, like this:
+  // inputImageURL.addEventListener("selectionchange", FUNCTION)
+  
+  if (typeof(inputImageURL.value) != "string") {
+    //problem
+  }
+  if (typeof(inputTitle.value) != "string" || inputTitle.value.length > 15) {
+    //very long titles are tough to display reasonably well
+  }
+  if (typeof(inputQuote.value) != "string" || inputQuote.value.length > 150) {
+    //no more than 2 lines of quote text really makes sense here...
+  }
+
+  let formData = new FormData(formNewPoster)      //Had to look this up (before we learned .value)
+  let submittedImageURL = formData.get("poster-image-url")
+  let submittedTitle = formData.get("poster-title")
+  let submittedQuote = formData.get("poster-quote")
+
+  currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
+
+  //Toggle visibilities and display new poster (instead of random / previous)
+  displayPoster(currentPoster)
+  hideSection(sectionPosterForm)
+  showSection(sectionMainPoster)
+}
+
+//Section Saved Posters functions:
 
 function showSavedPosters() {
   //Hide current poster (entire section - buttens included, etc.)
@@ -381,10 +423,6 @@ function showSavedPosters() {
   postersGrid.innerHTML = ""          //Needed, or you get some fun MTG-style cumulative upkeep effects!
   for (let i = 0; i < savedPosters.length; i++) {
     //Alt: maybe do the each 'enumerable' later?
-    //Access sectionSavedPosters, but we really want the <div> within...how to access this?
-    //I'd rather find a new way besides a full document query...also is it ok for me to do this locally vs putting at top of JS file?
-    // sectionSavedPosters.innerHTML += 
-    //Maybe create a whole new <div>?
     postersGrid.innerHTML += `<div class="mini-poster">
                               \t<img src="${savedPosters[i].imageURL}" alt="${savedPosters[i].altText}">
                               \t<h2>${savedPosters[i].title}</h2>
@@ -393,14 +431,13 @@ function showSavedPosters() {
   }
 }
 
+//Section Show Unmotivational Posters functions:
+
 function showUnmotivationalPosters() {
   hideSection(sectionMainPoster)
   showSection(sectionUnmotivationalPosters)
 
-  //Get our unmotivational poster data array ready!
-  //NOTE: this can only be run ONCE (cleaning cleaned data will confuse the moethods!)
-  //FIX THIS / MOVE IT ACCORDINGLY LATER!!!
-  //Update: I've decided to send raw data into cleaned variable now; this would just make more sense in most cases, I think
+  //Only load the posters once (for efficiency - for bigger datasets)
   if (!arePostersLoaded) {
     cleanData(rawUnmotivationalPosters)
     arePostersLoaded = true
@@ -409,8 +446,6 @@ function showUnmotivationalPosters() {
 
   unmotivationalGrid.innerHTML = ""
   for (let i = 0; i < unmotivationalPosters.length; i++) {
-    //For now, just format like saved posters page.
-    //ADJUST LATER!
     unmotivationalGrid.innerHTML += `<div class="mini-unmotivational-poster" id="${unmotivationalPosters[i].id}">
                                       \t<img src="${unmotivationalPosters[i].imageURL}" alt="${unmotivationalPosters[i].altText}">
                                       \t<h2>${unmotivationalPosters[i].title}</h2>
@@ -419,58 +454,11 @@ function showUnmotivationalPosters() {
   }
 }
 
-function makeAndDisplayPoster(event) {
-  //First, bypass default behavior.  This is apparently deprecated...so what is modern then?
-  event.preventDefault()
-
-  //If we want to do data validation, would it go here, or do I need another function w/ a different event listtener?  Probably this...
-
-
-  //Collect data.  Later / fancier: do error checking, have user re-do if needed
-  let formData = new FormData(formNewPoster)      //Had to look this up.  Alt might be to do usual button event and some other trickery?
-  //Alt: could grab .value on <input> tags
-  let submittedImageURL = formData.get("poster-image-url")
-  let submittedTitle = formData.get("poster-title")
-  let submittedQuote = formData.get("poster-quote")
-
-  //Create new poster (currentPoster is a global var, and thus accessible here...don't know if I like that)
-  currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
-
-  //Don't actually save the poster yet (that is done on the main page...)
-  // addPosterToLibrary(currentPoster)
-
-  //Toggle visibilities and display new poster (instead of random / previous)
-  displayPoster(currentPoster)
-  hideSection(sectionPosterForm)
-  showSection(sectionMainPoster)
-}
-
-function savePoster() {
-  addPosterToLibrary(currentPoster)
-  //Might have additional functionality later, like feedback to the user that the operation was successful or not (e.g. duplicate, or go to saved pics page)
-}
-
-function addPosterToLibrary(poster) {
-  //NOTE: this only adds to the savedPosters[] array, NOT to the actual random images, titles, quotes.
-  //Might want to have this option as well later, which would go here.
-
-  //Verify this is a unique entry.  It is unique only if everything other than the id is different (since that had BETTER change!)
-  for (let i = 0; i < savedPosters.length; i++) {
-    if (savedPosters[i].imageURL === poster.imageURL && savedPosters[i].title === poster.title && savedPosters[i].quote === poster.quote) {
-      return
-    }
-  }
-
-  //Actually save it
-  savedPosters.push(poster)
-}
-
 function deletePoster() {
-  //This is called when user double-clicks on 
   //NOTE: 'event' is apparently deprecated, and can be fragile.  I should look into using 'Event' instead...
   let currentElement = event.target
 
-  debugger
+  // debugger
   
   // if (!currentElement.classList.contains("unmotivational-posters-grid")) {
   //   //We found an actual poster - delete it both from HTML and the data array
@@ -517,34 +505,36 @@ function deletePoster() {
   }
   //If we made it here, we clicked on something valid
   currentElement = currentElement.closest("div")
-  // currentElement = currentElement.closest(".mini-poster")   //Does this work too?
 
-  for (let i = 0; i < unmotivationalPosters.length; i++) {
-    if (unmotivationalPosters[i].id === Number(currentElement.id)) {
-      //Found it!
-      unmotivationalPosters.splice(i, 1)
-      currentElement.classList.add("hidden")        //Again, hackey...but it serves the purpose for now
-      currentElement.remove()                       //What about this one?
-      break
-    }
-  }
-
-  unmotivationalPosters.forEach((poster, index) => {
-    if (poster.id === Number(currentElement.id)) {
-      unmotivationalPosters.splice(index, 1)
-      currentElement.remove()
-      // break                     //Hmm, this won't work for this 'enumerable'.  Then, this seems less effective...
-    }
+  //Refactored version based on recently learned .filter()
+  let remainingPosters = unmotivationalPosters.filter((poster) => {
+    return poster.id !== Number(currentElement.id)
   })
 
+  unmotivationalPosters = remainingPosters
+  currentElement.remove()
 }
 
 
-//These almost seem silly, but do provide good readability, so yeah...
-function hideSection(section) {
-  section.classList.add("hidden")
-}
+//Optional extensions related functions:
+// mainImage.addEventListener("dblclick", )
+// mainTitle.addEventListener("dblclick", )
+// mainQuote.addEventListener("dblclick", )
 
-function showSection(section) {
-  section.classList.remove("hidden")
-}
+// function randomizeComponent() {
+//   //Check which type of element should be randomized
+//   if (this.tagName.toLowerCase() === "img") {
+//     this.src = 
+//     return createPoster(getRandomElement(images), currentPoster.title, currentPoster.quote, currentPoster.altText)
+//   } else if (this.tagName.toLowerCase() === "h1") {
+
+//   } else if (this.tagName.toLowerCase() === "h3") {
+
+//   }
+
+//   //This is quicker, but probably not good (using more global var access)
+//   if (this.tagName.toLowerCase() === "img") {
+//     currentPoster.imageURL = getRandomElement(images)
+//   }
+//   //Etc.
+// }

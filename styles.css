@@ -147,6 +147,10 @@ button:hover {
 
 /*Unmotivational posters section*/
 
+.unmotivational-posters button {
+  margin: 16px;
+}
+
 .unmotivational-posters-grid {
   /*This is probably the best spot for implementing a flexbox arrangement*/
   display: flex;
