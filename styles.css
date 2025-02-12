@@ -70,11 +70,43 @@ button:active {
   font-weight: normal;
   letter-spacing: 20px;
   margin-bottom: 10px;
+  margin-top: 5px;
   text-transform: uppercase;
 }
 
 .main-poster button {
   margin: 10px;
+}
+
+.poster-element-border {
+  border: solid rgb(108, 94, 201) 3px;
+}
+
+.show-random {
+  position: relative;
+}
+
+.tooltip {
+  visibility: hidden;
+  width: 320px;
+  background-color: darkslateblue;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 5px;
+  padding: 5px 10px;
+  position: absolute;
+  z-index: 1;
+  top: 120%;
+  left: 0%;
+  margin-left: -20px;
+  opacity: 0.0;
+}
+
+.show-random:hover .tooltip {
+  visibility: visible;
+  opacity: 1.0;
+  transition: opacity 1s linear 1s;
 }
 
 /* ~~~~~ POSTER FORM SECTION ~~~~~ */
