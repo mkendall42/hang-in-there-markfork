@@ -284,6 +284,13 @@ buttonSaveThisPoster.addEventListener("click", savePoster)
 formNewPoster.addEventListener("submit", makeAndDisplayPoster)
 unmotivationalGrid.addEventListener("dblclick", deletePoster)
 
+mainImage.addEventListener("dblclick", makeRandomComponent)
+mainTitle.addEventListener("dblclick", makeRandomComponent)
+mainQuote.addEventListener("dblclick", makeRandomComponent)
+
+window.addEventListener("keydown", function wrapperFunction() { highlightElements(true) })
+window.addEventListener("keyup", function wrapperFunction() { highlightElements(false) })
+
 
 
 //Function / event handlers (organized by section / type)
@@ -339,10 +346,13 @@ function savePoster() {
   //Verify unique entry (and exit early if duplicate - more efficient)
   for (let i = 0; i < savedPosters.length; i++) {
     if (savedPosters[i].imageURL === currentPoster.imageURL && savedPosters[i].title === currentPoster.title && savedPosters[i].quote === currentPoster.quote) {
+      debugger
+      console.log("Ducplicate entry; NOT overwriting")
       return
     }
   }
 
+  console.log("About to overwrite")
   savedPosters.push(currentPoster)
 }
 
@@ -415,74 +425,51 @@ function showUnmotivationalPosters() {
 }
 
 function deletePoster() {
-  //Refactored based on learning about .closest(); also did another variant 'bubbling up' to parent element before
-  // if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
-  //   let remainingPosters = unmotivationalPosters.filter((poster) => {
-  //     return poster.id !== Number(currentElement.id)
-  //   })
-  
-  //   unmotivationalPosters = remainingPosters
-  //   currentElement.remove()
-  // }
-
-  //Other appraoches / refactors:
-  //Using findIndex():
   if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
-    let deleteIndex = unmotivationalPosters.findIndex((poster) => {
-      return poster.id !== Number(currentElement.id)
-    })
-    unmotivationalPosters.splice(deleteIndex, 1)
+    for (let i = 0; i < unmotivationalPosters.length; i++) {
+      if (unmotivationalPosters[i].id === Number(currentElement.id)) {
+        unmotivationalPosters.splice(i, 1)
+        break
+      }
+    }
+    
     currentElement.remove()
   }
-  //Using a good 'ol for loop:
-  // if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
-  //   for (let i = 0; i < unmotivationalPosters.length; i++) {
-  //     if (unmotivationalPosters[i].id === Number(currentElement.id)) {
-  //       unmotivationalPosters.splice(i, 1)
-  //       break
-  //     }
-  //   }
-  //   currentElement.remove()
-  // }
 }
 
+function makeRandomComponent() {
+  //Deep copy needed due to sneaky reference issues with currentPoster being an object and savedPosters being an array
+  let tempPoster = structuredClone(currentPoster)
 
-//Optional extensions related functions:
+  switch (this.tagName.toLowerCase()) {
+    case "img":
+      tempPoster.imageURL = getRandomElement(images)
+      tempPoster.altText = "Motivation image goes here"
+      break
+    case "h1":
+      tempPoster.title = getRandomElement(titles)
+      break
+    case "h3":
+      tempPoster.quote = getRandomElement(quotes)
+  }
 
-//If we want to do data validation, we might want to monitor as keys are pressed / data is entered; OR once submit button is being attempted to be clicked
-  //Options: need to monitor as keys are pressed / data entered to determine if button can be pressed or not.
-  //One way to do this is via an event listender, like this:
-  // inputImageURL.addEventListener("selectionchange", FUNCTION)
-  
-  // if (typeof(inputImageURL.value) !== "string") {
-  //   //problem
-  // }
-  // if (typeof(inputTitle.value) !== "string" || inputTitle.value.length > 15) {
-  //   //very long titles are tough to display reasonably well
-  // }
-  // if (typeof(inputQuote.value) !== "string" || inputQuote.value.length > 150) {
-  //   //no more than 2 lines of quote text really makes sense here...
-  // }
+  displayPoster(createPoster(tempPoster.imageURL, tempPoster.title, tempPoster.quote, tempPoster.altText))
+}
 
+function highlightElements(isKeyDown) {
+  if (event.key === "Shift") {
+    showPosterElementBorders(isKeyDown)
+  }
+}
 
-// mainImage.addEventListener("dblclick", )
-// mainTitle.addEventListener("dblclick", )
-// mainQuote.addEventListener("dblclick", )
-
-// function randomizeComponent() {
-//   //Check which type of element should be randomized
-//   if (this.tagName.toLowerCase() === "img") {
-//     this.src = 
-//     return createPoster(getRandomElement(images), currentPoster.title, currentPoster.quote, currentPoster.altText)
-//   } else if (this.tagName.toLowerCase() === "h1") {
-
-//   } else if (this.tagName.toLowerCase() === "h3") {
-
-//   }
-
-//   //This is quicker, but probably not good (using more global var access)
-//   if (this.tagName.toLowerCase() === "img") {
-//     currentPoster.imageURL = getRandomElement(images)
-//   }
-//   //Etc.
-// }
+function showPosterElementBorders(isDisplayed) {
+  if (isDisplayed) {
+    mainImage.classList.add("poster-element-border")
+    mainTitle.classList.add("poster-element-border")
+    mainQuote.classList.add("poster-element-border")
+  } else {
+    mainImage.classList.remove("poster-element-border")
+    mainTitle.classList.remove("poster-element-border")
+    mainQuote.classList.remove("poster-element-border")
+  }
+}
