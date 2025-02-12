@@ -1,4 +1,4 @@
-// query selector variables go here 👇
+//Query selectors, organized by section / type
 
 let sectionMainPoster = document.querySelector(".main-poster")
 let mainImage = document.querySelector(".poster-img")
@@ -29,8 +29,8 @@ let buttonReturnToMotivation = document.querySelector("#return-to-main")
 
 
 
-// we've provided you with some data to work with 👇
-// tip: you can tuck this data out of view with the dropdown found near the line number where the variable is declared 
+//Provided and raw datasets
+
 var images = [
   "./assets/bees.jpg",
   "./assets/bridge.jpg",
@@ -259,13 +259,11 @@ var arePostersLoaded = false
 
 
 
-// event listeners go here 👇
+//Event listeners
 
-//For page load or when random button is clicked, a random image should be chosen:
 window.addEventListener("load", function wrapperFunction() { displayPoster(null) })
 buttonShowRandomPoster.addEventListener("click", function wrapperFunction() { displayPoster(null) })
 
-//These buttons change visibility of sections on the page:
 buttonMakeYourOwnPoster.addEventListener("click", showMakePosterForm)
 buttonSavedPosters.addEventListener("click", showSavedPosters)
 buttonUnmotivationalPosters.addEventListener("click", showUnmotivationalPosters)
@@ -282,16 +280,13 @@ buttonReturnToMotivation.addEventListener("click", function wrapperFunction() {
   showSection(sectionMainPoster)
 })
 
-//Other functions (involving more than just 'traveling' / changing visibility)
 buttonSaveThisPoster.addEventListener("click", savePoster)
 formNewPoster.addEventListener("submit", makeAndDisplayPoster)
-//Home in one level (parent) above actual poster divs to help with associating HTML element with array element
 unmotivationalGrid.addEventListener("dblclick", deletePoster)
 
 
 
-// functions and event handlers go here 👇
-// (we've provided two to get you started)!
+//Function / event handlers (organized by section / type)
 
 //General-purpose / not belonging to a section functions:
 
@@ -362,13 +357,12 @@ function showMakePosterForm() {
 function makeAndDisplayPoster(event) {
   event.preventDefault()
 
-  let formData = new FormData(formNewPoster)      //Note: implemented before we learned .value
+  let formData = new FormData(formNewPoster)      //Note: partially implemented before we learned .value
   let submittedImageURL = formData.get("poster-image-url")
   let submittedTitle = formData.get("poster-title")
   let submittedQuote = formData.get("poster-quote")
   formNewPoster.reset()
 
-  //Ensure form has actual entered data (not only '')
   if(submittedImageURL && submittedTitle && submittedQuote) {
     images.push(submittedImageURL)
     titles.push(submittedTitle)
@@ -405,7 +399,6 @@ function showUnmotivationalPosters() {
   hideSection(sectionMainPoster)
   showSection(sectionUnmotivationalPosters)
 
-  //Only load the posters once (for efficiency - especially for bigger datasets)
   if (!arePostersLoaded) {
     cleanData(rawUnmotivationalPosters)
     arePostersLoaded = true

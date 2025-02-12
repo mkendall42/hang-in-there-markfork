@@ -30,8 +30,7 @@ button:hover {
 }
 
 button:active {
-  transform: scale(0.8);
-  /* transition: 0.1s; */
+  transform: scale(1.1);    /*Curious problem if scale < 1.0 - can explain*/
 }
 
 .hidden {
@@ -163,10 +162,9 @@ button:active {
 }
 
 .unmotivational-posters-grid {
-  /*This is probably the best spot for implementing a flexbox arrangement*/
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;      /*Is this the best way to control this?*/
+  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -181,27 +179,21 @@ button:active {
 }
 
 .mini-unmotivational-poster img {
-  height: 140px;    /*About a 3:2 aspect ratio - would be nice to preserve it*/
+  height: 140px;
   width: 210px;
 }
 
 .mini-unmotivational-poster h2 {
   font-size: 1.4em;
-  /* font-size: 2vw; */
-  /*Would be nice to scale text down to fit box if needed*/
   letter-spacing: 3px;
   font-weight: normal;
   padding: 8px 0px 5px 0px;
-  /* width: 90%; */
 }
 
 .mini-unmotivational-poster h4 {
   color: white;
   font-size: 0.8em;
-  /* letter-spacing: 1px; */
   font-weight: normal;
   width: 90%;
   line-height: 1em;
-  /* text-transform: uppercase; */
 }
-
