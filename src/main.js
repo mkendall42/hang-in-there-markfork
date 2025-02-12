@@ -5,8 +5,8 @@ let mainImage = document.querySelector(".poster-img")
 let mainTitle = document.querySelector(".poster-title")
 let mainQuote = document.querySelector(".poster-quote")
 
-let sectionPosterForm = document.querySelector(".poster-form")   //Should be static and unique enough
-let formNewPoster = document.querySelector("#new-poster-form")   //I manually created this ID to uniquely locate it
+let sectionPosterForm = document.querySelector(".poster-form")
+let formNewPoster = document.querySelector("#new-poster-form")
 let inputImageURL = document.querySelector("#poster-image-url")
 let inputTitle = document.querySelector("#poster-title")
 let inputQuote = document.querySelector("#poster-quote")
@@ -20,8 +20,8 @@ let unmotivationalGrid = document.querySelector(".unmotivational-posters-grid")
 let buttonShowRandomPoster = document.querySelector(".show-random")
 let buttonMakeYourOwnPoster = document.querySelector(".show-form")
 let buttonSavedPosters = document.querySelector(".show-saved")
-let buttonTakeMeBack = document.querySelector(".show-main")     //This worries me; this class could easily be re-used somewhere else...
-let buttonBackToMain = document.querySelector(".back-to-main")  //Again, overlapping function with the above (not DRY really...or at the least, makes it less clear)
+let buttonTakeMeBack = document.querySelector(".show-main")
+let buttonBackToMain = document.querySelector(".back-to-main")
 let buttonShowMyPoster = document.querySelector(".make-poster")
 let buttonSaveThisPoster = document.querySelector(".save-poster")
 let buttonUnmotivationalPosters = document.querySelector(".show-unmotivational")
@@ -132,7 +132,7 @@ var savedPosters = [];
 var currentPoster;
 
 //Unmotivational poster data (assume it was e.g. pulled from a database)
-let rawUnmotivationalPosters = [
+var rawUnmotivationalPosters = [
   {
     name: "FAILURE",
     description: "Why bother trying? It's probably not worth it.",
@@ -255,15 +255,14 @@ let rawUnmotivationalPosters = [
   }
 ];
 var unmotivationalPosters = []
-var arePostersLoaded = false      //Controls loading raw poster data only once (alt could be to call cleanData() during initial page load)
+var arePostersLoaded = false
 
 
 
 // event listeners go here 👇
 
-//For page load, a random image should be chosen:
+//For page load or when random button is clicked, a random image should be chosen:
 window.addEventListener("load", function wrapperFunction() { displayPoster(null) })
-//When random button is clicked, it should (re-)randomize the image:
 buttonShowRandomPoster.addEventListener("click", function wrapperFunction() { displayPoster(null) })
 
 //These buttons change visibility of sections on the page:
@@ -286,10 +285,7 @@ buttonReturnToMotivation.addEventListener("click", function wrapperFunction() {
 //Other functions (involving more than just 'traveling' / changing visibility)
 buttonSaveThisPoster.addEventListener("click", savePoster)
 formNewPoster.addEventListener("submit", makeAndDisplayPoster)
-//Do I need this one?  I think the submit (button) is covered above...
-// buttonShowMyPoster.addEventListener("click", makeAndDisplayPoster)
-
-//Home in one level (parent) above actual poster divs to help with recovering the array element w/ the HTML element (see deletePoster() for complexity)
+//Home in one level (parent) above actual poster divs to help with associating HTML element with array element
 unmotivationalGrid.addEventListener("dblclick", deletePoster)
 
 
@@ -299,28 +295,24 @@ unmotivationalGrid.addEventListener("dblclick", deletePoster)
 
 //General-purpose / not belonging to a section functions:
 
-//Refactored variant of provided function (this is more compact / self-contained)
+//Refactored variants of provided functions
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
 
 function createPoster(imageURL, title, quote, alternateText = "") {
   return {
-    // id: Date.now(),       //When called in rapid succession, 1 ms precision is insufficient...
-    id: Math.floor(Math.random() * 9e8 + 1e8),    //Needed to ensure ~unique ID (could repeat, but P ~ 10^-9)
+    id: Math.floor(Math.random() * 9e8 + 1e8),    //Needed to ensure unique ID (could repeat, but P ~ 10^-8 for this usage case)
     imageURL: imageURL, 
     title: title, 
     quote: quote,
-    altText: alternateText  //Also added default alt text so it doesn't have to appear in arbitrary locations
+    altText: alternateText
   }
 }
 
 function cleanData(posters) {
-  //Yep, the async function was definitely causing issues - would only load the FIRST unmotivational poster the first time
   for (let i = 0; i < posters.length; i++) {
     unmotivationalPosters[i] = createPoster(posters[i].img_url, posters[i].name, posters[i].description, "Unmotivational poster text goes here")
-    //Temporary fix: force the IDs to increment by one so they're truly unique.  Turns out ms aren't precise enough for this operation (they all load in < 1 ms)...
-    unmotivationalPosters[i].id += i
   }
 }
 
@@ -336,7 +328,6 @@ function showSection(section) {
 //Section Main Page functions:
 
 function displayPoster(poster) {
-  //Display the supplied poster, or a random one if none provided.
   if (poster === null) {
     poster = createPoster(getRandomElement(images), getRandomElement(titles), getRandomElement(quotes), "Motivation image goes here")
   }
@@ -350,20 +341,14 @@ function displayPoster(poster) {
 }
 
 function savePoster() {
-  //NOTE: PROBABLY DELETE LATER, SINCE IT ONLY APPEARS ONCE!!!
-  addPosterToLibrary(currentPoster)
-  //Might have additional functionality later, like feedback to the user that the operation was successful or not (e.g. duplicate, or go to saved pics page)
-}
-
-function addPosterToLibrary(poster) {
-  //Verify this is a unique entry.  It is unique only if everything other than the id is different.
+  //Verify unique entry (and exit early if duplicate - more efficient)
   for (let i = 0; i < savedPosters.length; i++) {
-    if (savedPosters[i].imageURL === poster.imageURL && savedPosters[i].title === poster.title && savedPosters[i].quote === poster.quote) {
+    if (savedPosters[i].imageURL === currentPoster.imageURL && savedPosters[i].title === currentPoster.title && savedPosters[i].quote === currentPoster.quote) {
       return
     }
   }
 
-  savedPosters.push(poster)
+  savedPosters.push(currentPoster)
 }
 
 
@@ -375,37 +360,27 @@ function showMakePosterForm() {
 }
 
 function makeAndDisplayPoster(event) {
-  //First, bypass default behavior.  Note that 'event' is apparently deprecated...so what is modern then?
   event.preventDefault()
 
-  //If we want to do data validation, would it go here, or do I need another function w/ a different event listener?  Probably this...
-  //Options: need to monitor as keys are pressed / data entered to determine if button can be pressed or not.
-  //One way to do this is via an event listender, like this:
-  // inputImageURL.addEventListener("selectionchange", FUNCTION)
-  
-  if (typeof(inputImageURL.value) != "string") {
-    //problem
-  }
-  if (typeof(inputTitle.value) != "string" || inputTitle.value.length > 15) {
-    //very long titles are tough to display reasonably well
-  }
-  if (typeof(inputQuote.value) != "string" || inputQuote.value.length > 150) {
-    //no more than 2 lines of quote text really makes sense here...
-  }
-
-  let formData = new FormData(formNewPoster)      //Had to look this up (before we learned .value)
+  let formData = new FormData(formNewPoster)      //Note: implemented before we learned .value
   let submittedImageURL = formData.get("poster-image-url")
   let submittedTitle = formData.get("poster-title")
   let submittedQuote = formData.get("poster-quote")
   formNewPoster.reset()
 
-  currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
+  //Ensure form has actual entered data (not only '')
+  if(submittedImageURL && submittedTitle && submittedQuote) {
+    images.push(submittedImageURL)
+    titles.push(submittedTitle)
+    quotes.push(submittedQuote)
+    currentPoster = createPoster(submittedImageURL, submittedTitle, submittedQuote, "Created motivational poster")
+  }
 
-  //Toggle visibilities and display new poster (instead of random / previous)
   displayPoster(currentPoster)
   hideSection(sectionPosterForm)
   showSection(sectionMainPoster)
 }
+
 
 //Section Saved Posters functions:
 
@@ -413,7 +388,7 @@ function showSavedPosters() {
   hideSection(sectionMainPoster)
   showSection(sectionSavedPosters)
 
-  postersGrid.innerHTML = ""          //Needed, or you get some fun MTG-style cumulative upkeep effects!
+  postersGrid.innerHTML = ""          //Needed, or we get some fun MTG-style cumulative upkeep effects!
   for (let i = 0; i < savedPosters.length; i++) {
     postersGrid.innerHTML += `<div class="mini-poster">
                               \t<img src="${savedPosters[i].imageURL}" alt="${savedPosters[i].altText}">
@@ -422,6 +397,7 @@ function showSavedPosters() {
                               </div>`
   }
 }
+
 
 //Section Show Unmotivational Posters functions:
 
@@ -447,18 +423,55 @@ function showUnmotivationalPosters() {
 
 function deletePoster() {
   //Refactored based on learning about .closest(); also did another variant 'bubbling up' to parent element before
+  // if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
+  //   let remainingPosters = unmotivationalPosters.filter((poster) => {
+  //     return poster.id !== Number(currentElement.id)
+  //   })
+  
+  //   unmotivationalPosters = remainingPosters
+  //   currentElement.remove()
+  // }
+
+  //Other appraoches / refactors:
+  //Using findIndex():
   if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
-    let remainingPosters = unmotivationalPosters.filter((poster) => {
+    let deleteIndex = unmotivationalPosters.findIndex((poster) => {
       return poster.id !== Number(currentElement.id)
     })
-  
-    unmotivationalPosters = remainingPosters
+    unmotivationalPosters.splice(deleteIndex, 1)
     currentElement.remove()
   }
+  //Using a good 'ol for loop:
+  // if (currentElement = event.target.closest(".mini-unmotivational-poster")) {
+  //   for (let i = 0; i < unmotivationalPosters.length; i++) {
+  //     if (unmotivationalPosters[i].id === Number(currentElement.id)) {
+  //       unmotivationalPosters.splice(i, 1)
+  //       break
+  //     }
+  //   }
+  //   currentElement.remove()
+  // }
 }
 
 
 //Optional extensions related functions:
+
+//If we want to do data validation, we might want to monitor as keys are pressed / data is entered; OR once submit button is being attempted to be clicked
+  //Options: need to monitor as keys are pressed / data entered to determine if button can be pressed or not.
+  //One way to do this is via an event listender, like this:
+  // inputImageURL.addEventListener("selectionchange", FUNCTION)
+  
+  // if (typeof(inputImageURL.value) !== "string") {
+  //   //problem
+  // }
+  // if (typeof(inputTitle.value) !== "string" || inputTitle.value.length > 15) {
+  //   //very long titles are tough to display reasonably well
+  // }
+  // if (typeof(inputQuote.value) !== "string" || inputQuote.value.length > 150) {
+  //   //no more than 2 lines of quote text really makes sense here...
+  // }
+
+
 // mainImage.addEventListener("dblclick", )
 // mainTitle.addEventListener("dblclick", )
 // mainQuote.addEventListener("dblclick", )

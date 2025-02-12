@@ -29,6 +29,11 @@ button:hover {
   background: darkslateblue;
 }
 
+button:active {
+  transform: scale(0.8);
+  /* transition: 0.1s; */
+}
+
 .hidden {
   display: none!important;
 }
